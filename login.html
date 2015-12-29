@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	
+	<script src="https://cdn.socket.io/socket.io-1.3.7.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/css/mystyle-login.css">
+	<title>Room</title>	
+</head>
+<body>
+	<script src="/js/jquery-1.11.3.min.js"></script>
+	<script src="/js/logic-login.js"></script>
+	<script src="/js/bootstrap.min.js"></script>
+
+	<div class="container">
+		<div id="normal" class="row">
+			<div style="padding-top: 30%" class="col-xs-offset-1 col-xs-10 col-sm-offset-4 col-sm-4">
+				<form id="box" class="form-horizontal">
+					<div class="form-group">
+						<label class="col-xs-offset-1 col-xs-3">Usuario</label>
+						<div class="col-xs-7">
+							<input id="iduser" class="form-control" type="text" autofocus>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-xs-offset-1 col-xs-3">Contraseña</label>
+						<div class="col-xs-7">
+							<input id="idpass" class="form-control" type="password">
+						</div>
+					</div>
+				 </form>
+			</div>
+		</div>
+		<div id="unknown" class="row">
+			<label id="confuse-text">we don't know you</label>
+		</div>
+	</div>
+	
+	
+</body>
+</html>
