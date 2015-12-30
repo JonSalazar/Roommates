@@ -67,10 +67,12 @@ String.prototype.format = function() {
     return formatted;
 };
 var add_member = function(m) {
-	$('#members').append('<div id="id_{0}" class="member"><input onclick="change_receiver(\'{0}\',\'{1}\');" type="image" src="/img/{1}" class="img-responsive"></div>'.format(m.name, m.source));
+	$('#members').append('<div id="id_{0}" class="member"><input id="id_img_{0}" onclick="change_receiver(\'{0}\',\'{1}\');" type="image" src="/img/{1}" class="img-responsive"></div>'.format(m.name, m.source));
 };
 var change_receiver = function(_name, source) {
 	receiver = _name;
+	$("input[id ^='id_img_']").attr("class", "img-responsive");
+	$('#id_img_'+ receiver).attr("class", "img-responsive img-selected");
 };
 
 var set_image = function(_source) {

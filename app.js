@@ -114,7 +114,7 @@ io.on("connection", function(socket) {
 			var user_online = memory.members_online[i];
 			if (user_online === data.user) {
 				// skip your self
-				break;
+				continue;
 			}
 			m.name = bd[user_online].name;
 			m.source = bd[user_online].src;
