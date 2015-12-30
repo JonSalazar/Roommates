@@ -101,30 +101,38 @@ io.on("connection", function(socket) {
 		var already_socket = typeof(memory.socket[id_member]);
 		memory.socket[id_member] = socket;
 
-		// add member to members' list
-		memory.members_online[id_member] = data.user;
 
 		// add the default 'all'
 		var m = {};
 		m.name = "all";
-		m.source = "nobody.png";
+		m.source = "all.png";
 		socket.emit("new_login", m);
 
 		// receive all the already logged members
 		for(var i = 0; i < memory.members_online.length; i++) {
 			var m = {};
 			var user_online = memory.members_online[i];
+			if (user_online === data.user) {
+				// skip your self
+				break;
+			}
 			m.name = bd[user_online].name;
 			m.source = bd[user_online].src;
 			socket.emit("new_login", m);
 		}
 
+		// set the avatar image src
+		socket.emit("set_image", bd[data.user].src);
 
 		console.log("member " + name + " connected");
 		// if we already have this member connected
 		if (already_socket !== "undefined") {
 			return;
 		}
+		
+		// add member to members' list
+		memory.members_online[id_member] = data.user;
+
 		
 		// say to the all members that i arrive
 		var m = {};
