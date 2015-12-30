@@ -25,22 +25,21 @@ $(document).ready(function() {
 		if (e.keyCode == 13) {
 			var v = {};
 			v.user = user;
-			v.txt = $('#txtbox-xs').val() + $('#txtbox-sm').val() ;
+			v.txt = $('#txtbox').val();
 			v.to = receiver;
 			v.token = token;
 
 			socket.emit('say', v);
-			$('#txtbox-xs').val('');
-			$('#txtbox-sm').val('');
+			$('#txtbox').val('');
 		}
 	};
 
-	$('#txtbox-xs').keypress(to_enter);
-	$('#txtbox-sm').keypress(to_enter);
+	$('#txtbox').keypress(to_enter);
 
 	socket.on('hear', function(data) {
-		$('#chat-ul-sm').append('<xtb><li>' + data + '\n</li></xtb>');
-		$('#chat-ul-xs').append('<xtb><li>' + data + '\n</li></xtb>');
+		$('#chat-ul').append('<xtb><li>' + data + '\n</li></xtb>');
+		var ch = $('#chat-ul');
+		ch.scrollTop(ch.prop('scrollHeight'));
 	});
 
 	socket.on('new_login', function(data) {
@@ -68,6 +67,9 @@ String.prototype.format = function() {
 };
 var add_member = function(m) {
 	$('#members').append('<div id="id_{0}" class="member"><input id="id_img_{0}" onclick="change_receiver(\'{0}\',\'{1}\');" type="image" src="/img/{1}" class="img-responsive"></div>'.format(m.name, m.source));
+	if (m.name === "all") {
+		$('#id_img_all').attr("class", "img-responsive img-selected");
+	}
 };
 var change_receiver = function(_name, source) {
 	receiver = _name;

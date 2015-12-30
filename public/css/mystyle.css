@@ -30,27 +30,17 @@ p {
 	min-width: 100px;
 }
 
-#chatbox-xs {
+#chatbox {
 	max-width: 100%;
 	height: 160px;
 }
-#chatbox-sm {
-	max-width: 100%;
-	height: 400px;
-}
-#chat-ul-xs {
+
+#chat-ul {
 	list-style-type: none;
 	overflow-y: scroll;
 	background-color: #D3E8FE;
 	width: 100%;
 	height: 120px;
-}
-#chat-ul-sm {
-	list-style-type: none;
-	overflow-y: scroll;
-	background-color: #D3E8FE;
-	width: 100%;
-	height: 360px;
 }
 
 xtb {
@@ -174,4 +164,16 @@ xtw {
   #desktop {
   	height: 200px;
   }
+  #chatbox {
+	max-width: 100%;
+	height: 400px;
+  }
+  #chat-ul {
+	list-style-type: none;
+	overflow-y: scroll;
+	background-color: #D3E8FE;
+	width: 100%;
+	height: 360px;
+  }
+
 }
