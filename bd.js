@@ -1,18 +1,18 @@
 module.exports = {
 	"infix" : { 
-		"user"	: "infix",
+		"name"	: "infix",
 		"pass"	: "hola", 
 		"src"	: "pik.png" 
 	},
 
 	"perse" : { 
-		"user"	: "perse",
+		"name"	: "perse",
 		"pass"	: "123", 
 		"src" 	: "pik2.png"
 	},
 
 	"another" : {
-		"user"	: "another",
+		"name"	: "another",
 		"pass"	: "123", 
 		"src" 	: "pik3.png"
 	}

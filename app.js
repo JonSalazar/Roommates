@@ -38,25 +38,37 @@ var new_token = function() {
 
 
 var validate_user = function(user, token) {
-	var user_t = memory.member[token];
-	if (typeof(user_t) === "undefined" || user !== user_t) {
+	var bduser = bd[user];
+	if (typeof(bduser) === "undefined") {
 		console.log("user unknown " + user);
 		return false;
-	} else {
-		return true;
 	}
+
+	var name = bduser.name;
+	var id_member = memory.member.indexOf(name);
+	if (id_member === -1) {
+		console.log("member not logged " + user);
+		return false;
+	}
+
+	var user_token = memory.token[id_member];
+	if (typeof(user_token) === "undefined" || token !== user_token) {
+		console.log("token invalid " + user);
+		return false;
+	}
+
+	return true;
 };
 
 
 io.on("connection", function(socket) {
 
 	socket.on("say", function(data) {
-		var youare = data.persona;
+		var youare = data.user;
 		var to = data.to;
 		var token = data.token;
-		if (youare !== memory.member[token]) {
-			// someone is a cheater
-			console.log("someone is a cheater");
+
+		if(!validate_user(youare, token)) {
 			return;
 		}
 
@@ -65,7 +77,8 @@ io.on("connection", function(socket) {
 			return;
 		}
 
-		var destination_socket = memory.socket[to];
+		var id_member = memory.member.indexOf(to);
+		var destination_socket = memory.socket[id_member];
 
 		if (typeof(destination_socket) === "undefined") {
 			console.log(youare + " is trying to talk with " + to + " and doesn't exist");
@@ -78,30 +91,45 @@ io.on("connection", function(socket) {
 
 	socket.on("know_me", function(data) {
 		// save the current member's socket
-		if (validate_user(data.user, data.token)) {
-			memory.socket[data.user] = socket;
+		if (!validate_user(data.user, data.token)) {
+			console.log("invalid user " + data.user);
+			return;
 		}
+
+		var name = bd[data.user].name;
+		var id_member = memory.member.indexOf(name);
+		var already_socket = typeof(memory.socket[id_member]);
+		memory.socket[id_member] = socket;
 
 		// add member to members' list
-		memory.members_online.push(data.user);
+		memory.members_online[id_member] = data.user;
 
-		// receive all the already logged members
-		for(var i = 0; i < memory.members_online.length; i++) {
-			var m = {};
-			m.name = memory.members_online[i];
-			m.source = bd[m.name].src;
-			socket.emit("new_login", m);
-		}
 		// add the default 'all'
 		var m = {};
 		m.name = "all";
 		m.source = "nobody.png";
 		socket.emit("new_login", m);
 
+		// receive all the already logged members
+		for(var i = 0; i < memory.members_online.length; i++) {
+			var m = {};
+			var user_online = memory.members_online[i];
+			m.name = bd[user_online].name;
+			m.source = bd[user_online].src;
+			socket.emit("new_login", m);
+		}
+
+
+		console.log("member " + name + " connected");
+		// if we already have this member connected
+		if (already_socket !== "undefined") {
+			return;
+		}
+		
 		// say to the all members that i arrive
 		var m = {};
-		m.name = data.user;
-		m.source = bd[data.user].src;
+		m.name = name;
+		m.source = bd[name].src;
 		socket.broadcast.emit("new_login", m);
 	});
 
@@ -113,18 +141,53 @@ io.on("connection", function(socket) {
 			return;
 		}
 
+		var name = bd[data.user].name;
 		var token = new_token();
-		var user = bd[data.user].user;
-		memory.member[token] = user;
+		
+		// accout currently inactive
+		var id_member = memory.member.indexOf(name);
+		if (id_member === -1) {
+			id_member = memory.member.length;
+			memory.member[id_member] = name;
+			memory.token[id_member] = token;
 
+		} else {
+			// account currently active
+			memory.token[id_member] = token;
+			// use memory.socket[id_member] to warn to the other account that someone is logging in
+		}
+		
 		var v = {};
-		v.user = user;
+		v.user = data.user;
 		v.token = token;
 
 		socket.emit("welcome", v);
 	});
 
-	console.log("new IO connection");
+
+	socket.on("disconnect", function() {
+		var id_member = memory.socket.indexOf(socket);
+		if (id_member === -1) {
+			return;
+		}
+		var name = memory.member[id_member];
+		console.log("member " + name + " disconnected");
+	});
+
+	socket.on("logout", function() {
+		var id_member = memory.socket.indexOf(socket);
+		if (id_member === -1) {
+			return;
+		}
+		var out_member = memory.member.splice(id_member, 1);
+		memory.token.splice(id_member, 1);
+		memory.socket.splice(id_member, 1);
+		memory.members_online.splice(id_member, 1);
+
+		// warn all users online that out_member is gone
+		socket.broadcast.emit('member_is_gone', out_member);
+		console.log("member " + out_member + " is logging out");
+	});
 });
 
 
