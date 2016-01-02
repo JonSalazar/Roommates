@@ -11,7 +11,7 @@ $(document).ready(function() {
 	});
 
 	socket.on('welcome', function(data) {
-		location.replace('http://192.168.0.5:3000/main?u=' + data.user + '&t='+data.token);
+		location.replace('http://192.168.0.3:3000/main?u=' + data.user + '&t='+data.token);
 	});
 	
 	socket.on('whodoyouare', function(data) {
