@@ -87,7 +87,7 @@ var set_image = function(data) {
 
 var logout = function() {
 	socket.emit('logout');
-	location.replace('http://192.168.0.3:3000');
+	location.replace('http://roommates.ignorelist.com:3000');
 };
 
 var member_is_gone = function(_name) {
