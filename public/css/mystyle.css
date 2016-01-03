@@ -46,12 +46,19 @@ p {
 xtb {
 	font-family: verdana;
 	color: #000000;
+	font-size: 16px;
 }
-
 xtw {
 	font-family: verdana;
 	color: #DDDDDD;
+	font-size: 16px;
 }
+xtUser {
+	font-family: Georgia;
+	color: #7F7F7D;
+	font-size: 18px;
+}
+
 #msg {
 	width: 100%;
 	position: absolute;

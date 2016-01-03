@@ -1,8 +1,7 @@
 var receiver = 'all';
+var name;
 var socket;
 $(document).ready(function() {
-	
-
 	socket = io();
 
 	var l = location.search;
@@ -24,8 +23,11 @@ $(document).ready(function() {
 	var to_enter = function (e) {
 		if (e.keyCode == 13) {
 			var v = {};
-			v.user = user;
 			v.txt = $('#txtbox').val();
+			if (v.txt === '') {
+				return;
+			}
+			v.user = user;
 			v.to = receiver;
 			v.token = token;
 
@@ -36,23 +38,11 @@ $(document).ready(function() {
 
 	$('#txtbox').keypress(to_enter);
 
-	socket.on('hear', function(data) {
-		$('#chat-ul').append('<xtb><li>' + data + '\n</li></xtb>');
-		var ch = $('#chat-ul');
-		ch.scrollTop(ch.prop('scrollHeight'));
-	});
-
-	socket.on('new_login', function(data) {
-		add_member(data);
-	});
-
-	socket.on('member_is_gone', function(data) {
-		 member_is_gone(data);
-	});
-
-	socket.on('set_image', function(data) {
-		set_image(data);
-	});
+	socket.on('hear', hear);
+	socket.on('new_login', add_member);
+	socket.on('member_is_gone', member_is_gone);
+	socket.on('set_image', set_image);
+	socket.on('load_talk', load_talk);
 });
 
 
@@ -65,6 +55,18 @@ String.prototype.format = function() {
     }
     return formatted;
 };
+var hear = function(data) {
+	var is_current = (data.global && receiver === 'all')
+	 || (!data.global && (data.from === name || data.from === receiver));
+	if (is_current) {
+		add_to_chat(data);
+		return;
+	}
+
+	// is not visible, so we warn the member
+	var to = data.global ? 'all' : data.from;
+	$('#id_img_' + to).attr("class", "img-responsive img-warn");
+};
 var add_member = function(m) {
 	$('#members').append('<div id="id_{0}" class="member"><input id="id_img_{0}" onclick="change_receiver(\'{0}\',\'{1}\');" type="image" src="/img/{1}" class="img-responsive"></div>'.format(m.name, m.source));
 	if (m.name === "all") {
@@ -73,12 +75,14 @@ var add_member = function(m) {
 };
 var change_receiver = function(_name, source) {
 	receiver = _name;
+	socket.emit('load_private_talk', receiver);
 	$("input[id ^='id_img_']").attr("class", "img-responsive");
 	$('#id_img_'+ receiver).attr("class", "img-responsive img-selected");
 };
 
-var set_image = function(_source) {
-	$('#avatar').attr("src","/img/{0}".format(_source));
+var set_image = function(data) {
+	name = data.name;
+	$('#avatar').attr("src","/img/{0}".format(data.src));
 }
 
 var logout = function() {
@@ -89,3 +93,28 @@ var logout = function() {
 var member_is_gone = function(_name) {
 	$('#id_'+_name).remove();
 };
+
+var load_talk = function(talk) {
+	erase_chat();
+	for (var i = talk.length - 1; i >= 0; i--) {
+		add_to_chat(talk[i]);
+	}
+	var ch = $('#chat-ul');
+	ch.scrollTop(ch.prop('scrollHeight'));
+};
+
+var erase_chat = function() {
+	$('#chat-ul').text('');
+};
+
+
+var add_to_chat = function(data) {
+	if (data.color === "undefined") {
+		$('#chat-ul').append('<li><xtUser>{0}:</xtUser> <xtb>{1}</xtb></li>'.format(data.from, data.text));
+	} else {
+		$('#chat-ul').append('<li><xtUser style="color : {2}">{0}:</xtUser> <xtb>{1}</xtb></li>'.format(data.from, data.text, data.color));
+	}
+	
+	var ch = $('#chat-ul');
+	ch.scrollTop(ch.prop('scrollHeight'));
+}

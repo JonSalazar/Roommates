@@ -1,7 +1,7 @@
 var express = require("express"),
 	path = require("path");
 
-var start = function() {
+var start = function(mdb) {
 	var app = express();
 	var server = require("http").createServer(app);
 	var io = require("socket.io").listen(server);
@@ -12,7 +12,7 @@ var start = function() {
 	require("./requestHandler")(app);
 
 	io.on("connection", function(socket) {
-		require("./socketHandler")(socket, io);
+		require("./socketHandler")(socket, io, mdb);
 	});
 
 	console.log("listening port 3000");

@@ -1,4 +1,5 @@
-var server = require("./server");
+var server	= require("./server"),
+	mdb 	= require("./mdb");
 
 
-server.start();
+server.start(mdb);

@@ -1,4 +1,4 @@
-module.exports = function(socket, io) {
+module.exports = function(socket, io, mdb) {
 	var tools = require("./tools");
 	var memory = require("./memory");
 	var bd = require("./bd");
@@ -66,9 +66,18 @@ module.exports = function(socket, io) {
 		}
 
 		// set the avatar image src
-		socket.emit("set_image", bd[data.user].src);
+		var v = {};
+		v.src = bd[data.user].src;
+		v.name = bd[data.user].name;
+		socket.emit("set_image", v);
 
-		console.log("member " + name + " connected");
+		// load the chat
+		var callback = function(data) {
+			socket.emit("load_talk", data);
+		}
+		mdb.get_global_talk(callback);
+
+		console.log("member " + data.user + " connected");
 		// if we already have this member connected
 		if (already_socket !== "undefined") {
 			return;
@@ -81,21 +90,29 @@ module.exports = function(socket, io) {
 		// say to the all members that i arrive
 		var m = {};
 		m.name = name;
-		m.source = bd[name].src;
+		m.source = bd[data.user].src;
 		socket.broadcast.emit("new_login", m);
 		};
 
 	var say = function(data) {
-		var youare = data.user;
+		var id_from = memory.members_online.indexOf(data.user);
+		var youare = memory.member[id_from];
 		var to = data.to;
 		var token = data.token;
 
-		if(!tools.validate_user(youare, token)) {
+		if(!tools.validate_user(data.user, token)) {
 			return;
 		}
 
+		var v = {};
+		v.from = youare;
+		v.text = data.txt;
+		v.color = bd[data.user].color;
+
 		if (to === "all") {
-			io.sockets.emit("hear", youare + ": " + data.txt);
+			v.global = true;
+			io.sockets.emit("hear", v);
+			mdb.all_add(bd[data.user].name, data.txt);
 			return;
 		}
 
@@ -106,9 +123,10 @@ module.exports = function(socket, io) {
 			console.log(youare + " is trying to talk with " + to + " and doesn't exist");
 			return;
 		}
-		
-		destination_socket.emit("hear", youare + ": " + data.txt);
-		socket.emit("hear", youare + ": " + data.txt);
+
+		destination_socket.emit("hear", v);
+		socket.emit("hear", v);
+		mdb.add(bd[data.user].name, bd[data.user].id, bd[memory.members_online[id_member]].id, data.txt);
 	};
 
 
@@ -136,10 +154,37 @@ module.exports = function(socket, io) {
 		console.log("member " + name + " disconnected");
 	};
 
+	var load_private_talk = function(name_to) {
+		var id_member_from = memory.socket.indexOf(socket);
+		if (id_member_from === -1) {
+			return;
+		}
 
-	socket.on("login", 		login);
-	socket.on("know_me", 	know_me);
-	socket.on("say", 		say);
-	socket.on("logout", 	logout);
-	socket.on("disconnect", disconnect);
+		if (name_to === "all") {
+			var callback = function(talk) {
+				socket.emit("load_talk", talk);
+			};
+			mdb.get_global_talk(callback);
+			return;
+		}
+
+		var id_member_to = memory.member.indexOf(name_to);
+		if (id_member_to === -1) {
+			return;
+		}
+
+		var user_from = memory.members_online[id_member_from];
+		var user_to = memory.members_online[id_member_to]
+		var callback = function(talk) {
+			socket.emit("load_talk", talk);
+		};
+		mdb.get_talk(bd[user_from].id, bd[user_to].id, callback);
+	};
+
+	socket.on("login", 				login);
+	socket.on("know_me", 			know_me);
+	socket.on("say", 				say);
+	socket.on("logout",				logout);
+	socket.on("disconnect",			disconnect);
+	socket.on("load_private_talk",	load_private_talk)
 };
