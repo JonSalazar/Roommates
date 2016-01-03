@@ -54,12 +54,12 @@ module.exports = function(socket, io, mdb) {
 
 		// receive all the already logged members
 		for(var i = 0; i < memory.members_online.length; i++) {
-			var m = {};
 			var user_online = memory.members_online[i];
 			if (user_online === data.user) {
 				// skip your self
 				continue;
 			}
+			m = {};
 			m.name = bd[user_online].name;
 			m.source = bd[user_online].src;
 			socket.emit("new_login", m);
@@ -88,7 +88,7 @@ module.exports = function(socket, io, mdb) {
 
 		
 		// say to the all members that i arrive
-		var m = {};
+		m = {};
 		m.name = name;
 		m.source = bd[data.user].src;
 		socket.broadcast.emit("new_login", m);
